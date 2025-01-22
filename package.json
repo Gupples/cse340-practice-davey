@@ -12,6 +12,7 @@
     "hello": "nodemon --env-file=.env hello.js"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "ws": "^8.18.0"
   }
 }
