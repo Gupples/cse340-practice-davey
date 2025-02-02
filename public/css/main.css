@@ -1,0 +1,10 @@
+html, body {
+    background-color: lightblue;
+}
+.dev-mode-msg {
+    font-style: italic;
+    text-decoration: underline;
+    font-size: 1.75em;
+    font-weight: bold;
+    color: darkred;
+}
