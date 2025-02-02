@@ -1,10 +1,45 @@
 html, body {
     background-color: lightblue;
 }
+
+nav {
+    font-weight: bold;
+    position: relative;
+    text-align: center;
+}
+
+nav a {
+    font-size: large;
+    padding-left: 3em;
+    padding-right: 3em;
+
+}
+
+#about-me {
+    text-align: center;
+}
+
+#about-me img {
+    padding-bottom: 2em;
+}
+
+#about-me p {
+    max-width: 80%;
+    margin: auto;
+    text-align: left;
+    text-indent: 1.5em;
+}
+
+footer {
+    text-align: left;
+    padding-top: 3em;
+}
+
 .dev-mode-msg {
     font-style: italic;
     text-decoration: underline;
     font-size: 1.75em;
     font-weight: bold;
     color: darkred;
+    text-align: center;
 }
