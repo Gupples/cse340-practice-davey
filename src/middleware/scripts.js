@@ -8,8 +8,9 @@ const scripts = (req, res, next) => {
     res.locals.scripts = [];
     if (res.locals.inDevMode)
         {
-        res.locals.devModeMsg = `<p class="dev-mode-msg">Warning: Development Mode
-        Enabled🦄</p>`;
+        res.locals.devModeMsg = `<p class="dev-mode-msg">Warning: 
+        Development Mode Enabled🦄</p>`;
+        res.locals.scripts.push(`<link rel="stylesheet" href="/css/dev.css">`);
         res.locals.scripts.push(`
             <script>
                 const ws = new WebSocket('ws://localhost:${parseInt(port) + 1}');
@@ -19,8 +20,6 @@ const scripts = (req, res, next) => {
             </script>
             `);
     }
-
-    // console.log(req.query); // Use req to figure out route-specific logic.
 
     next();
 };
