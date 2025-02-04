@@ -1,5 +1,6 @@
 html, body {
     background-color: lightblue;
+    text-align: center;
 }
 
 nav {
@@ -15,12 +16,9 @@ nav a {
 
 }
 
-#about-me {
-    text-align: center;
-}
-
 #about-me img {
     padding-bottom: 2em;
+    width: 200px;
 }
 
 #about-me p {
