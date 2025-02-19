@@ -9,7 +9,10 @@ import configMode from './src/middleware/config-mode.js';
 import layouts from './src/middleware/layouts.js';
 import configureStaticPaths from './src/middleware/static-paths.js';
 import { notFoundHandler, globalErrorHandler } from './src/middleware/error-handler.js';
- 
+import configureSettingsBasedOnMode from './src/middleware/config-mode.js';
+import categoryRoute from './src/routes/category/index.js';
+
+
 // Get the current file path and directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,13 +24,18 @@ const mode = process.env.MODE || 'production';
 // Create an instance of an Express application
 const app = express();
 
+// Apply configuration Settings
+app.use(configureSettingsBasedOnMode);
+
+
 // Configure static paths for the Express application
 configureStaticPaths(app);
- 
+
+
 // Set EJS as the view engine and record the location of the views directory
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
- 
+
 // Set Layouts middleware to automatically wrap views in a layout and configure default layout
 app.set('layout default', 'default');
 app.set('layouts', path.join(__dirname, 'src/views/layouts'));
@@ -35,9 +43,12 @@ app.use(layouts);
 
 // Set the configuration mode for the application
 app.use(configMode);
- 
+
 // Use the home route for the root URL
 app.use('/', baseRoute);
+
+// Handle all requests for a category of games
+app.use('/category', categoryRoute);
 
 // Apply error handlers
 app.use(notFoundHandler);

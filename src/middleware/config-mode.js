@@ -1,8 +1,13 @@
+import { getNav } from '../utils/index.js';
 
 const port = process.env.PORT || 3000;
 const mode = process.env.MODE || 'production';
 
-const configureSettingsBasedOnMode = (req, res, next) => {
+
+
+const configureSettingsBasedOnMode =  async (req, res, next) => {
+    res.locals.navHTML = await getNav();
+    
     res.locals.devModeWarning = '';
     res.locals.isDevMode = mode.includes('dev');
     res.locals.port = port;
