@@ -11,6 +11,7 @@ import configureStaticPaths from './src/middleware/static-paths.js';
 import { notFoundHandler, globalErrorHandler } from './src/middleware/error-handler.js';
 import configureSettingsBasedOnMode from './src/middleware/config-mode.js';
 import categoryRoute from './src/routes/category/index.js';
+import { setupDatabase } from './src/database/index.js';
 
 
 // Get the current file path and directory name
@@ -73,8 +74,12 @@ if (mode.includes('dev')) {
         console.error('Failed to start WebSocket server:', error);
     }
 }
- 
-// Start the Express server
-app.listen(port, () => {
+
+// Start the server and run the database setup function on startup.
+app.listen(port, async () => {
+    // Ensure the database is setup
+    await setupDatabase();
+
+    // Notify the user where the server is running.
     console.log(`Server running on http://127.0.0.1:${port}`);
 });
