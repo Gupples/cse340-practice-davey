@@ -6,6 +6,7 @@ import path from 'path';
  * This replicates `express-ejs-layouts` behavior in pure EJS.
  */
 const layouts = (req, res, next) => {
+
     // Retrieve configuration from Express settings
     const layoutDir = req.app.get('layouts') || path.join(process.cwd(), 'views/layouts');
     const defaultLayout = req.app.get('layout default')?.replace(/\.ejs$/, '') || 'default';

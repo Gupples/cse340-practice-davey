@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { getGamesByClassification } from '../models/index.js';
  
 const router = Router();
  

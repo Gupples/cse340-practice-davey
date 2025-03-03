@@ -28,6 +28,11 @@ const app = express();
 // Apply configuration Settings
 app.use(configureSettingsBasedOnMode);
 
+// Middleware to parse JSON data in request body
+app.use(express.json());
+
+// Middleware to parse URL-encoded form data (like from a standard HTML form)
+app.use(express.urlencoded({ extended: true }));
 
 // Configure static paths for the Express application
 configureStaticPaths(app);

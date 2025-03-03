@@ -6,6 +6,7 @@ const mode = process.env.MODE || 'production';
 
 
 const configureSettingsBasedOnMode =  async (req, res, next) => {
+
     res.locals.navHTML = await getNav();
     
     res.locals.devModeWarning = '';
@@ -33,6 +34,7 @@ const configureSettingsBasedOnMode =  async (req, res, next) => {
 
         // Add a script that loads only in development mode
         res.locals.scripts.push('<script src="js/dev-mode.js"></script');
+
     }
 
     next();
