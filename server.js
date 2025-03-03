@@ -1,171 +1,77 @@
-// Import express using ESM syntax
+// Import required modules using ESM import syntax
 import express from 'express';
 import path from 'path';
-import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+ 
+// Import all other required modules: Route handlers, Middleware, etc.
+import baseRoute from './src/routes/index.js';
+import configMode from './src/middleware/config-mode.js';
+import layouts from './src/middleware/layouts.js';
+import configureStaticPaths from './src/middleware/static-paths.js';
+import { notFoundHandler, globalErrorHandler } from './src/middleware/error-handler.js';
+import configureSettingsBasedOnMode from './src/middleware/config-mode.js';
+import categoryRoute from './src/routes/category/index.js';
+import { setupDatabase } from './src/database/index.js';
 
+
+// Get the current file path and directory name
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
-const mode = process.env.MODE || 'production';
+// Start the server on the specified port
 const port = process.env.PORT || 3000;
-
+const mode = process.env.MODE || 'production';
+ 
 // Create an instance of an Express application
 const app = express();
 
-// Set the view engine to EJS
+// Apply configuration Settings
+app.use(configureSettingsBasedOnMode);
+
+// Middleware to parse JSON data in request body
+app.use(express.json());
+
+// Middleware to parse URL-encoded form data (like from a standard HTML form)
+app.use(express.urlencoded({ extended: true }));
+
+// Configure static paths for the Express application
+configureStaticPaths(app);
+
+
+// Set EJS as the view engine and record the location of the views directory
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'src/views'));
 
-// Register the 'public' directory to serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Set Layouts middleware to automatically wrap views in a layout and configure default layout
+app.set('layout default', 'default');
+app.set('layouts', path.join(__dirname, 'src/views/layouts'));
+app.use(layouts);
 
-// Global middleware to set mode (dev vs. prod)
-app.use((req, res, next) => {
-    // Locals is automatically available on the frontend and
-    //  do not need to pass.
-    res.locals.port = port;
-    res.locals.inDevMode = mode.includes('dev');
-    res.locals.devModeMsg = `<p class="dev-mode-msg">Warning: Development Mode
-     Enabled🦄</p>`;
-    // Initialize scripts array
-    res.locals.scripts = [];
+// Set the configuration mode for the application
+app.use(configMode);
 
-    // Add A + B tests
-    if (new Date().getSeconds() % 2 === 0) {
-        res.locals.ABVersion = 'a';
-    } else {
-        res.locals.ABVersion = 'b';
-    };
+// Use the home route for the root URL
+app.use('/', baseRoute);
 
-    // Add scripts in development mode only
-    if (res.locals.inDevMode) {
-        // Complete the Live Reloading Feature
-        res.locals.scripts.push(`
-        <script>
-            const ws = new WebSocket('ws://localhost:${parseInt(port) + 1}');
-            ws.onclose = () => {
-                setTimeout(() => location.reload(), 2000);
-            };
-        </script>
-        `);
-    }
+// Handle all requests for a category of games
+app.use('/category', categoryRoute);
 
-    // Add A/B Styling
-    if (res.locals.ABVersion == 'a')
-    {
-        res.locals.scripts.push('<script src="/js/a-test.js"></script>');
-        res.locals.scripts.push('<link rel="stylesheet" href="/css/a.css">')
-    } else if (res.locals.ABVersion == 'b') {
-        res.locals.scripts.push('<script src="/js/b-test.js"></script>');
-        res.locals.scripts.push('<link rel="stylesheet" href="/css/b.css">')
-    }
-    next();
-});
-
-// Global middleware to set a custom header
-app.use((req, res, next) => {
-    res.setHeader('X-Powered-By', 'Express and Duct Tape');
-    next();
-});
-
-// Home page
-app.get('/', (req, res) => {
-    const title = 'Home Page';
-    const content = `
-        <h1>Welcome to the Home Page</h1>`;
-    res.render('index', { title, content });
-});
-
-// About page
-app.get('/about', (req, res) => {
-    const title = 'About Page';
-    const content = '<h1>Welcome to the About Page</h1>';
-    res.render('index', { title, content });
-});
-
-// Contact page
-app.get('/contact', (req, res) => {
-    const title = 'Contact Page';
-    const content = '<h1>Welcome to the Contact Page</h1>';
-    res.render('index', { title, content });
-});
-
-// ID validation middleware
-const validateId = (req, res, next) => {
-    const { id } = req.params;
-    if (isNaN(id)) {
-        const error = new Error('Invalid ID: must be a number.');
-        error.status = 400;
-        next(error);
-        return;
-    }
-    next();
-};
-
-// Middleware to validate name
-const validateName = (req, res, next) => {
-    const { name } = req.params;
-    if (!/^[a-zA-Z]+$/.test(name)) {
-        const error = new Error('Invalid name: must only contain letters.');
-        error.status = 400;
-        next(error);
-        return;
-    }
-    next();
-};
- 
-// Account page route with ID and name validation
-app.get('/account/:name/:id', validateName, validateId, (req, res) => {
-    const title = "Account Page";
-    const { name, id } = req.params;
-    const isEven = id % 2 === 0 ? "even" : "odd";
-    const content = `
-        <h1>Welcome, ${name}!</h1>
-        <p>Your account ID is ${id}, which is an ${isEven} number.</p>
-    `;
-    res.render('index', { title, content });
-});
-
-// Handle 404 errors by passing an error
-app.use((req, res, next) => {
-    const error = new Error('Page Not Found');
-    error.status = 404;
-    next(error);
-});
- 
-// Centralized error handler
-app.use((err, req, res, next) => {
-    const status = err.status || 500;
-    const context = { mode, port, error: err.message };
-    res.status(status);
-    switch(status) {
-        case 400:
-            context.title = 'Bad Request';
-            res.render('400', context);
-            break;
-        case 404:
-            context.title = 'Page Not Found';
-            res.render('400', context);
-            break;
-        default:
-            context.title = 'Internal Server Error';
-            context.error = err.message;
-            res.render('500', context);
-    }
-});
+// Apply error handlers
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 // When in development mode, start a WebSocket server for live reloading
 if (mode.includes('dev')) {
     const ws = await import('ws');
-
+ 
     try {
         const wsPort = parseInt(port) + 1;
         const wsServer = new ws.WebSocketServer({ port: wsPort });
-
+ 
         wsServer.on('listening', () => {
-            console.log(`WebSocket is running on http://localhost:${wsPort}`);
+            console.log(`WebSocket server is running on port ${wsPort}`);
         });
-
+ 
         wsServer.on('error', (error) => {
             console.error('WebSocket server error:', error);
         });
@@ -174,7 +80,11 @@ if (mode.includes('dev')) {
     }
 }
 
-// Start the server and listen on the specified port
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+// Start the server and run the database setup function on startup.
+app.listen(port, async () => {
+    // Ensure the database is setup
+    await setupDatabase();
+
+    // Notify the user where the server is running.
+    console.log(`Server running on http://127.0.0.1:${port}`);
 });
